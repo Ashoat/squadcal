@@ -6,13 +6,11 @@ import type { ChatMessageItem } from 'lib/selectors/chat-selectors';
 import type { ThreadInfo } from 'lib/types/thread-types';
 
 import { ChatContext } from './chat-context';
+import ChatItemHeightMeasurer from './chat-item-height-measurer.react';
 import type { ChatMessageItemWithHeight } from './message-list-container.react';
 
-type BaseProps = {|
-  +children: React.Node,
-|};
 type Props = {|
-  ...BaseProps,
+  +children: React.Node,
 |};
 
 export type MeasurementTask = {|
@@ -23,35 +21,81 @@ export type MeasurementTask = {|
   ) => mixed,
   +measurerID: number,
 |};
+type State = {|
+  +measurements: $ReadOnlyArray<MeasurementTask>,
+|};
 
-class ChatContextProvider extends React.PureComponent<Props> {
-  registerMeasurer = () => ({
-    measure: (
-      // eslint-disable-next-line no-unused-vars
-      messages: $ReadOnlyArray<ChatMessageItem>,
-      // eslint-disable-next-line no-unused-vars
-      threadInfo: ThreadInfo,
-      // eslint-disable-next-line no-unused-vars
-      onMessagesMeasured: ($ReadOnlyArray<ChatMessageItemWithHeight>) => mixed,
-    ) => {},
-    unregister: () => {},
-  });
+class ChatContextProvider extends React.PureComponent<Props, State> {
+  state: State = {
+    measurements: [],
+  };
+  nextMeasurerID: number = 0;
+
+  registerMeasurer = () => {
+    const measurerID = this.nextMeasurerID++;
+    return {
+      measure: (
+        messages: $ReadOnlyArray<ChatMessageItem>,
+        threadInfo: ThreadInfo,
+        onMessagesMeasured: (
+          $ReadOnlyArray<ChatMessageItemWithHeight>,
+        ) => mixed,
+      ) =>
+        this.measureMessages(
+          messages,
+          threadInfo,
+          onMessagesMeasured,
+          measurerID,
+        ),
+      unregister: () =>
+        this.setState((state) => ({
+          measurements: state.measurements.filter(
+            (measurement) => measurement.measurerID !== measurerID,
+          ),
+        })),
+    };
+  };
+
+  measureMessages = (
+    messages: $ReadOnlyArray<ChatMessageItem>,
+    threadInfo: ThreadInfo,
+    onMessagesMeasured: ($ReadOnlyArray<ChatMessageItemWithHeight>) => mixed,
+    measurerID: number,
+  ) => {
+    const newMeasurement = {
+      messages,
+      threadInfo,
+      onMessagesMeasured,
+      measurerID,
+    };
+    this.setState((state) => {
+      const withoutCurrentMeasurement = state.measurements.filter(
+        (measurement) => measurement.measurerID !== measurerID,
+      );
+      return {
+        measurements: [...withoutCurrentMeasurement, newMeasurement],
+      };
+    });
+  };
 
   contextValue = {
     registerMeasurer: this.registerMeasurer,
   };
 
   render() {
+    const heightMeasurers = this.state.measurements.map((measurement) => (
+      <ChatItemHeightMeasurer
+        key={measurement.measurerID}
+        measurement={measurement}
+      />
+    ));
     return (
       <ChatContext.Provider value={this.contextValue}>
+        {heightMeasurers}
         {this.props.children}
       </ChatContext.Provider>
     );
   }
 }
 
-export default React.memo<BaseProps>(function ConnectedChatContextProvider(
-  props: BaseProps,
-) {
-  return <ChatContextProvider {...props} />;
-});
+export default ChatContextProvider;
