@@ -20,7 +20,7 @@ export type MessageListContextType = {|
 
 const MessageListContext = React.createContext<?MessageListContextType>();
 
-function useMessageListContext(threadID: string) {
+function useMessageListContext(threadID: ?string) {
   const getTextMessageMarkdownRules = useTextMessageRulesFunc(threadID);
   return React.useMemo(
     () => ({
@@ -30,4 +30,21 @@ function useMessageListContext(threadID: string) {
   );
 }
 
-export { MessageListContext, useMessageListContext };
+type Props = {|
+  +children: React.Node,
+  +threadID: ?string,
+|};
+function MessageListContextProvider(props: Props) {
+  const context = useMessageListContext(props.threadID);
+  return (
+    <MessageListContext.Provider value={context}>
+      {props.children}
+    </MessageListContext.Provider>
+  );
+}
+
+export {
+  MessageListContext,
+  useMessageListContext,
+  MessageListContextProvider,
+};

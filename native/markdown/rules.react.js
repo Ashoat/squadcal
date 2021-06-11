@@ -3,6 +3,7 @@
 import _memoize from 'lodash/memoize';
 import * as React from 'react';
 import { Text, View } from 'react-native';
+import { createSelector } from 'reselect';
 import * as SimpleMarkdown from 'simple-markdown';
 
 import { relativeMemberInfoSelectorForMembersOfThread } from 'lib/selectors/user-selectors';
@@ -327,18 +328,27 @@ const fullMarkdownRules: (boolean) => MarkdownRules = _memoize(
   },
 );
 
-function useTextMessageRulesFunc(threadID: string) {
-  const threadMembers = useSelector(
-    relativeMemberInfoSelectorForMembersOfThread(threadID),
-  );
-  return React.useMemo(
-    () =>
-      _memoize<[boolean], MarkdownRules>((useDarkStyle: boolean) =>
-        textMessageRules(threadMembers, useDarkStyle),
-      ),
-    [threadMembers],
-  );
+function useTextMessageRulesFunc(
+  threadID: ?string,
+): (useDarkStyle: boolean) => MarkdownRules {
+  return useSelector(getTextMessageRulesFunction(threadID));
 }
+
+const getTextMessageRulesFunction = _memoize((threadID: ?string) =>
+  createSelector(
+    relativeMemberInfoSelectorForMembersOfThread(threadID),
+    (
+      threadMembers: $ReadOnlyArray<RelativeMemberInfo>,
+    ): ((boolean) => MarkdownRules) => {
+      if (!threadID) {
+        return fullMarkdownRules;
+      }
+      return _memoize<[boolean], MarkdownRules>((useDarkStyle: boolean) =>
+        textMessageRules(threadMembers, useDarkStyle),
+      );
+    },
+  ),
+);
 
 function textMessageRules(
   members: $ReadOnlyArray<RelativeMemberInfo>,
