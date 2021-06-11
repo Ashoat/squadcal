@@ -1,5 +1,6 @@
 // @flow
 
+import invariant from 'invariant';
 import * as React from 'react';
 
 import type { ChatMessageItem } from 'lib/selectors/chat-selectors';
@@ -21,4 +22,19 @@ export type ChatContextType = {|
 |};
 const ChatContext: React.Context<?ChatContextType> = React.createContext(null);
 
-export { ChatContext };
+function useHeightMeasurer(): MessagesMeasurer {
+  const chatContext = React.useContext(ChatContext);
+  invariant(chatContext, 'Chat context should be set');
+
+  const measureRegistrationRef = React.useRef();
+  if (!measureRegistrationRef.current) {
+    measureRegistrationRef.current = chatContext.registerMeasurer();
+  }
+  const measureRegistration = measureRegistrationRef.current;
+  React.useEffect(() => {
+    return measureRegistration.unregister;
+  }, [measureRegistration]);
+  return measureRegistration.measure;
+}
+
+export { ChatContext, useHeightMeasurer };
