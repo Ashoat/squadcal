@@ -12,16 +12,13 @@ import {
   userInfoSelectorForPotentialMembers,
   userSearchIndexForPotentialMembers,
 } from 'lib/selectors/user-selectors';
-import { messageID } from 'lib/shared/message-utils';
 import { getPotentialMemberItems } from 'lib/shared/search-utils';
 import { useExistingThreadInfoFinder } from 'lib/shared/thread-utils';
-import { messageTypes } from 'lib/types/message-types';
 import type { ThreadInfo } from 'lib/types/thread-types';
 import type { AccountUserInfo, UserListItem } from 'lib/types/user-types';
 
 import ContentLoading from '../components/content-loading.react';
-import NodeHeightMeasurer from '../components/node-height-measurer.react';
-import { type InputState, InputStateContext } from '../input/input-state';
+import { InputStateContext } from '../input/input-state';
 import {
   OverlayContext,
   type OverlayContextType,
@@ -29,12 +26,9 @@ import {
 import type { NavigationRoute } from '../navigation/route-names';
 import { useSelector } from '../redux/redux-utils';
 import { type Colors, useColors, useStyles } from '../themes/colors';
+import { type MessagesMeasurer, useHeightMeasurer } from './chat-context';
 import ChatInputBar from './chat-input-bar.react';
-import { chatMessageItemKey } from './chat-list.react';
 import type { ChatNavigationProp } from './chat.react';
-import { composedMessageMaxWidthSelector } from './composed-message-width';
-import { dummyNodeForRobotextMessageHeightMeasurement } from './inner-robotext-message.react';
-import { dummyNodeForTextMessageHeightMeasurement } from './inner-text-message.react';
 import MessageListThreadSearch from './message-list-thread-search.react';
 import {
   MessageListContext,
@@ -42,7 +36,7 @@ import {
 } from './message-list-types';
 import MessageList from './message-list.react';
 import type { ChatMessageInfoItemWithHeight } from './message.react';
-import { multimediaMessageContentSizes } from './multimedia-message.react';
+
 export type ChatMessageItemWithHeight =
   | {| itemType: 'loader' |}
   | ChatMessageInfoItemWithHeight;
@@ -63,13 +57,11 @@ type Props = {|
   +userSearchResults: $ReadOnlyArray<UserListItem>,
   +threadInfo: ThreadInfo,
   +messageListData: $ReadOnlyArray<ChatMessageItem>,
-  +composedMessageMaxWidth: number,
   +colors: Colors,
   +styles: typeof unboundStyles,
-  // withInputState
-  +inputState: ?InputState,
   // withOverlayContext
   +overlayContext: ?OverlayContextType,
+  +measureMessages: MessagesMeasurer,
 |};
 type State = {|
   +listDataWithHeights: ?$ReadOnlyArray<ChatMessageItemWithHeight>,
@@ -89,11 +81,31 @@ class MessageListContainer extends React.PureComponent<Props, State> {
     return overlayContext.scrollBlockingModalStatus !== 'closed';
   }
 
+  componentDidMount() {
+    this.props.measureMessages(
+      this.props.messageListData,
+      this.props.threadInfo,
+      this.allHeightsMeasured,
+    );
+  }
+
   componentDidUpdate(prevProps: Props) {
     const oldListData = prevProps.messageListData;
     const newListData = this.props.messageListData;
     if (!newListData && oldListData) {
       this.setState({ listDataWithHeights: null });
+    }
+
+    if (
+      oldListData !== newListData ||
+      prevProps.threadInfo !== this.props.threadInfo ||
+      prevProps.measureMessages !== this.props.measureMessages
+    ) {
+      this.props.measureMessages(
+        newListData,
+        this.props.threadInfo,
+        this.allHeightsMeasured,
+      );
     }
 
     if (!this.frozen && this.pendingListDataWithHeights) {
@@ -156,134 +168,11 @@ class MessageListContainer extends React.PureComponent<Props, State> {
 
     return (
       <View style={styles.container}>
-        <NodeHeightMeasurer
-          listData={this.props.messageListData}
-          itemToID={this.heightMeasurerID}
-          itemToMeasureKey={this.heightMeasurerKey}
-          itemToDummy={this.heightMeasurerDummy}
-          mergeItemWithHeight={this.heightMeasurerMergeItem}
-          allHeightsMeasured={this.allHeightsMeasured}
-          inputState={this.props.inputState}
-          composedMessageMaxWidth={this.props.composedMessageMaxWidth}
-        />
         {searchComponent}
         {threadContent}
       </View>
     );
   }
-
-  heightMeasurerID = (item: ChatMessageItem) => {
-    return chatMessageItemKey(item);
-  };
-
-  heightMeasurerKey = (item: ChatMessageItem) => {
-    if (item.itemType !== 'message') {
-      return null;
-    }
-    const { messageInfo } = item;
-    if (messageInfo.type === messageTypes.TEXT) {
-      return messageInfo.text;
-    } else if (item.robotext && typeof item.robotext === 'string') {
-      return item.robotext;
-    }
-    return null;
-  };
-
-  heightMeasurerDummy = (item: ChatMessageItem) => {
-    invariant(
-      item.itemType === 'message',
-      'NodeHeightMeasurer asked for dummy for non-message item',
-    );
-    const { messageInfo } = item;
-    if (messageInfo.type === messageTypes.TEXT) {
-      return dummyNodeForTextMessageHeightMeasurement(messageInfo.text);
-    } else if (item.robotext && typeof item.robotext === 'string') {
-      return dummyNodeForRobotextMessageHeightMeasurement(item.robotext);
-    }
-    invariant(false, 'NodeHeightMeasurer asked for dummy for non-text message');
-  };
-
-  heightMeasurerMergeItem = (item: ChatMessageItem, height: ?number) => {
-    if (item.itemType !== 'message') {
-      return item;
-    }
-
-    const { messageInfo } = item;
-    invariant(
-      messageInfo.type !== messageTypes.SIDEBAR_SOURCE,
-      'Sidebar source messages should be replaced by sourceMessage before being measured',
-    );
-    const { threadInfo } = this.props;
-    if (
-      messageInfo.type === messageTypes.IMAGES ||
-      messageInfo.type === messageTypes.MULTIMEDIA
-    ) {
-      const { inputState } = this.props;
-      // Conditional due to Flow...
-      const localMessageInfo = item.localMessageInfo
-        ? item.localMessageInfo
-        : null;
-      const id = messageID(messageInfo);
-      const pendingUploads =
-        inputState &&
-        inputState.pendingUploads &&
-        inputState.pendingUploads[id];
-      const sizes = multimediaMessageContentSizes(
-        messageInfo,
-        this.props.composedMessageMaxWidth,
-      );
-      return {
-        itemType: 'message',
-        messageShapeType: 'multimedia',
-        messageInfo,
-        localMessageInfo,
-        threadInfo,
-        startsConversation: item.startsConversation,
-        startsCluster: item.startsCluster,
-        endsCluster: item.endsCluster,
-        threadCreatedFromMessage: item.threadCreatedFromMessage,
-        pendingUploads,
-        ...sizes,
-      };
-    }
-
-    invariant(height !== null && height !== undefined, 'height should be set');
-    if (messageInfo.type === messageTypes.TEXT) {
-      // Conditional due to Flow...
-      const localMessageInfo = item.localMessageInfo
-        ? item.localMessageInfo
-        : null;
-      return {
-        itemType: 'message',
-        messageShapeType: 'text',
-        messageInfo,
-        localMessageInfo,
-        threadInfo,
-        startsConversation: item.startsConversation,
-        startsCluster: item.startsCluster,
-        endsCluster: item.endsCluster,
-        threadCreatedFromMessage: item.threadCreatedFromMessage,
-        contentHeight: height,
-      };
-    } else {
-      invariant(
-        typeof item.robotext === 'string',
-        "Flow can't handle our fancy types :(",
-      );
-      return {
-        itemType: 'message',
-        messageShapeType: 'robotext',
-        messageInfo,
-        threadInfo,
-        startsConversation: item.startsConversation,
-        startsCluster: item.startsCluster,
-        endsCluster: item.endsCluster,
-        threadCreatedFromMessage: item.threadCreatedFromMessage,
-        robotext: item.robotext,
-        contentHeight: height,
-      };
-    }
-  };
 
   allHeightsMeasured = (
     listDataWithHeights: $ReadOnlyArray<ChatMessageItemWithHeight>,
@@ -398,11 +287,11 @@ export default React.memo<BaseProps>(function ConnectedMessageListContainer(
     messageListData,
     'messageListData must be specified in messageListContainer',
   );
-  const composedMessageMaxWidth = useSelector(composedMessageMaxWidthSelector);
   const colors = useColors();
   const styles = useStyles(unboundStyles);
   const overlayContext = React.useContext(OverlayContext);
   const messageListContext = useMessageListContext(threadID);
+  const measureMessages = useHeightMeasurer();
   return (
     <MessageListContext.Provider value={messageListContext}>
       <MessageListContainer
@@ -416,11 +305,10 @@ export default React.memo<BaseProps>(function ConnectedMessageListContainer(
         userSearchResults={userSearchResults}
         threadInfo={threadInfo}
         messageListData={messageListData}
-        composedMessageMaxWidth={composedMessageMaxWidth}
         colors={colors}
         styles={styles}
-        inputState={inputState}
         overlayContext={overlayContext}
+        measureMessages={measureMessages}
       />
     </MessageListContext.Provider>
   );
