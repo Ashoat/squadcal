@@ -18,6 +18,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 
 import { actionLogger } from 'lib/utils/action-logger';
 
+import ChatContextProvider from './chat/chat-context-provider.react';
 import ConnectedStatusBar from './connected-status-bar.react';
 import CoreDataProvider from './data/core-data-provider.react';
 import ErrorBoundary from './error-boundary.react';
@@ -251,10 +252,12 @@ function Root() {
           <RootContext.Provider value={rootContext}>
             <InputStateContainer>
               <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-                <ConnectedStatusBar />
-                <PersistGate persistor={getPersistor()}>{gated}</PersistGate>
-                {navigation}
-                <NavigationHandler />
+                <ChatContextProvider>
+                  <ConnectedStatusBar />
+                  <PersistGate persistor={getPersistor()}>{gated}</PersistGate>
+                  {navigation}
+                  <NavigationHandler />
+                </ChatContextProvider>
               </SafeAreaProvider>
             </InputStateContainer>
           </RootContext.Provider>
