@@ -30,10 +30,7 @@ import { type MessagesMeasurer, useHeightMeasurer } from './chat-context';
 import ChatInputBar from './chat-input-bar.react';
 import type { ChatNavigationProp } from './chat.react';
 import MessageListThreadSearch from './message-list-thread-search.react';
-import {
-  MessageListContext,
-  useMessageListContext,
-} from './message-list-types';
+import { MessageListContextProvider } from './message-list-types';
 import MessageList from './message-list.react';
 import type { ChatMessageInfoItemWithHeight } from './message.react';
 
@@ -290,10 +287,9 @@ export default React.memo<BaseProps>(function ConnectedMessageListContainer(
   const colors = useColors();
   const styles = useStyles(unboundStyles);
   const overlayContext = React.useContext(OverlayContext);
-  const messageListContext = useMessageListContext(threadID);
   const measureMessages = useHeightMeasurer();
   return (
-    <MessageListContext.Provider value={messageListContext}>
+    <MessageListContextProvider threadID={threadID}>
       <MessageListContainer
         {...props}
         usernameInputText={usernameInputText}
@@ -310,6 +306,6 @@ export default React.memo<BaseProps>(function ConnectedMessageListContainer(
         overlayContext={overlayContext}
         measureMessages={measureMessages}
       />
-    </MessageListContext.Provider>
+    </MessageListContextProvider>
   );
 });

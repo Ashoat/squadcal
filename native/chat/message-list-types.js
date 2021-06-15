@@ -43,8 +43,4 @@ function MessageListContextProvider(props: Props) {
   );
 }
 
-export {
-  MessageListContext,
-  useMessageListContext,
-  MessageListContextProvider,
-};
+export { MessageListContext, MessageListContextProvider };

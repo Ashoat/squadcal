@@ -8,10 +8,7 @@ import type { TooltipRoute } from '../navigation/tooltip.react';
 import { useSelector } from '../redux/redux-utils';
 import { InnerTextMessage } from './inner-text-message.react';
 import { MessageHeader } from './message-header.react';
-import {
-  MessageListContext,
-  useMessageListContext,
-} from './message-list-types';
+import { MessageListContextProvider } from './message-list-types';
 
 /* eslint-disable import/no-named-as-default-member */
 const { Value } = Animated;
@@ -39,16 +36,15 @@ function TextMessageTooltipButton(props: Props) {
 
   const { item } = props.route.params;
   const threadID = item.threadInfo.id;
-  const messageListContext = useMessageListContext(threadID);
 
   const { navigation } = props;
   return (
-    <MessageListContext.Provider value={messageListContext}>
+    <MessageListContextProvider threadID={threadID}>
       <Animated.View style={headerStyle}>
         <MessageHeader item={item} focused={true} display="modal" />
       </Animated.View>
       <InnerTextMessage item={item} onPress={navigation.goBackOnce} />
-    </MessageListContext.Provider>
+    </MessageListContextProvider>
   );
 }
 
