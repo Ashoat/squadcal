@@ -15,6 +15,15 @@ type Props = {|
   ...BaseProps,
 |};
 
+export type MeasurementTask = {|
+  +messages: $ReadOnlyArray<ChatMessageItem>,
+  +threadInfo: ThreadInfo,
+  +onMessagesMeasured: (
+    messagesWithHeight: $ReadOnlyArray<ChatMessageItemWithHeight>,
+  ) => mixed,
+  +measurerID: number,
+|};
+
 class ChatContextProvider extends React.PureComponent<Props> {
   registerMeasurer = () => ({
     measure: (
