@@ -21,6 +21,7 @@ export type MeasurementTask = {|
     measuredHeights: $ReadOnlyMap<string, number>,
   ) => mixed,
   +measurerID: number,
+  +initialMeasuredHeights?: $ReadOnlyMap<string, number>,
 |};
 type State = {|
   +measurements: $ReadOnlyArray<MeasurementTask>,

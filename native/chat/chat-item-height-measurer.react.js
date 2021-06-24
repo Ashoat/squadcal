@@ -154,6 +154,7 @@ function ChatItemHeightMeasurer(props: Props) {
         allHeightsMeasured={measurement.onMessagesMeasured}
         inputState={inputState}
         composedMessageMaxWidth={composedMessageMaxWidth}
+        initialMeasuredHeights={measurement.initialMeasuredHeights}
       />
     </MessageListContextProvider>
   );

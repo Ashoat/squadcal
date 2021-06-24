@@ -38,6 +38,7 @@ type Props<Item, MergedItem> = {
     items: $ReadOnlyArray<MergedItem>,
     measuredHeights: $ReadOnlyMap<string, number>,
   ) => mixed,
+  +initialMeasuredHeights?: ?$ReadOnlyMap<string, number>,
   ...
 };
 type State<Item, MergedItem> = {|
@@ -69,24 +70,37 @@ class NodeHeightMeasurer<Item, MergedItem> extends React.PureComponent<
   constructor(props: Props<Item, MergedItem>) {
     super(props);
 
-    const { listData, itemToID, itemToMeasureKey, mergeItemWithHeight } = props;
+    const {
+      listData,
+      itemToID,
+      itemToMeasureKey,
+      mergeItemWithHeight,
+      initialMeasuredHeights,
+    } = props;
     const unmeasurableItems = new Map();
+    const measurableItems = new Map();
+    const measuredHeights = initialMeasuredHeights
+      ? new Map(initialMeasuredHeights)
+      : new Map();
+
     if (listData) {
       for (const item of listData) {
         const measureKey = itemToMeasureKey(item);
-        if (measureKey !== null && measureKey !== undefined) {
+        const height = measureKey ? measuredHeights.get(measureKey) : undefined;
+        if (measureKey && height === undefined) {
           continue;
         }
-        const mergedItem = mergeItemWithHeight(item, undefined);
-        unmeasurableItems.set(itemToID(item), { item, mergedItem });
+        const mergedItem = mergeItemWithHeight(item, height);
+        const itemsMap = measureKey ? measurableItems : unmeasurableItems;
+        itemsMap.set(itemToID(item), { item, mergedItem });
       }
     }
 
     this.state = {
       currentlyMeasuring: [],
       iteration: 0,
-      measuredHeights: new Map(),
-      measurableItems: new Map(),
+      measuredHeights,
+      measurableItems,
       unmeasurableItems,
     };
   }
