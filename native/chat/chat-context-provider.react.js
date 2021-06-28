@@ -21,7 +21,7 @@ export type MeasurementTask = {|
     measuredHeights: $ReadOnlyMap<string, number>,
   ) => mixed,
   +measurerID: number,
-  +initialMeasuredHeights?: $ReadOnlyMap<string, number>,
+  +initialMeasuredHeights: ?$ReadOnlyMap<string, number>,
 |};
 type State = {|
   +measurements: $ReadOnlyArray<MeasurementTask>,
@@ -74,11 +74,24 @@ class ChatContextProvider extends React.PureComponent<Props, State> {
       this.measuredHeights.set(measurerID, measuredHeights);
       onMessagesMeasured(messagesWithHeight);
     };
+
+    let initialMeasuredHeights = null;
+    const isMeasurementPresent = this.measuredHeights.has(measurerID);
+    if (!isMeasurementPresent) {
+      const sourceMeasurerID = this.state.measurements.find(
+        (measurement) => measurement.threadInfo.id === threadInfo.id,
+      )?.measurerID;
+      initialMeasuredHeights = sourceMeasurerID
+        ? this.measuredHeights.get(sourceMeasurerID)
+        : null;
+    }
+
     const newMeasurement = {
       messages,
       threadInfo,
       onMessagesMeasured: measureCallback,
       measurerID,
+      initialMeasuredHeights,
     };
     this.setState((state) => {
       const withoutCurrentMeasurement = state.measurements.filter(
