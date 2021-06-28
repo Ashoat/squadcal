@@ -18,6 +18,7 @@ export type MeasurementTask = {|
   +threadInfo: ThreadInfo,
   +onMessagesMeasured: (
     messagesWithHeight: $ReadOnlyArray<ChatMessageItemWithHeight>,
+    measuredHeights: $ReadOnlyMap<string, number>,
   ) => mixed,
   +measurerID: number,
 |};
@@ -30,6 +31,7 @@ class ChatContextProvider extends React.PureComponent<Props, State> {
     measurements: [],
   };
   nextMeasurerID: number = 0;
+  measuredHeights = new Map<number, $ReadOnlyMap<string, number>>();
 
   registerMeasurer = () => {
     const measurerID = this.nextMeasurerID++;
@@ -47,12 +49,14 @@ class ChatContextProvider extends React.PureComponent<Props, State> {
           onMessagesMeasured,
           measurerID,
         ),
-      unregister: () =>
+      unregister: () => {
         this.setState((state) => ({
           measurements: state.measurements.filter(
             (measurement) => measurement.measurerID !== measurerID,
           ),
-        })),
+        }));
+        this.measuredHeights.delete(measurerID);
+      },
     };
   };
 
@@ -62,10 +66,17 @@ class ChatContextProvider extends React.PureComponent<Props, State> {
     onMessagesMeasured: ($ReadOnlyArray<ChatMessageItemWithHeight>) => mixed,
     measurerID: number,
   ) => {
+    const measureCallback = (
+      messagesWithHeight: $ReadOnlyArray<ChatMessageItemWithHeight>,
+      measuredHeights: $ReadOnlyMap<string, number>,
+    ) => {
+      this.measuredHeights.set(measurerID, measuredHeights);
+      onMessagesMeasured(messagesWithHeight);
+    };
     const newMeasurement = {
       messages,
       threadInfo,
-      onMessagesMeasured,
+      onMessagesMeasured: measureCallback,
       measurerID,
     };
     this.setState((state) => {
