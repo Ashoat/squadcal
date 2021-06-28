@@ -34,7 +34,10 @@ type Props<Item, MergedItem> = {
   // Once we have the height, we need to merge it into the item
   +mergeItemWithHeight: (item: Item, height: ?number) => MergedItem,
   // We'll pass our results here when we're done
-  +allHeightsMeasured: (items: $ReadOnlyArray<MergedItem>) => mixed,
+  +allHeightsMeasured: (
+    items: $ReadOnlyArray<MergedItem>,
+    measuredHeights: $ReadOnlyMap<string, number>,
+  ) => mixed,
   ...
 };
 type State<Item, MergedItem> = {|
@@ -164,6 +167,7 @@ class NodeHeightMeasurer<Item, MergedItem> extends React.PureComponent<
     this.triggerCallback(
       this.state.measurableItems,
       this.state.unmeasurableItems,
+      this.state.measuredHeights,
       false,
     );
   }
@@ -171,6 +175,7 @@ class NodeHeightMeasurer<Item, MergedItem> extends React.PureComponent<
   triggerCallback(
     measurableItems: Map<string, MergedItemPair<Item, MergedItem>>,
     unmeasurableItems: Map<string, MergedItemPair<Item, MergedItem>>,
+    measuredHeights: Map<string, number>,
     mustTrigger: boolean,
   ) {
     const {
@@ -211,7 +216,7 @@ class NodeHeightMeasurer<Item, MergedItem> extends React.PureComponent<
       }
     }
 
-    allHeightsMeasured(result);
+    allHeightsMeasured(result, measuredHeights);
   }
 
   componentDidUpdate(
@@ -391,6 +396,7 @@ class NodeHeightMeasurer<Item, MergedItem> extends React.PureComponent<
       this.triggerCallback(
         nextMeasurableItems,
         nextUnmeasurableItems,
+        nextMeasuredHeights,
         measurementJustCompleted,
       );
     }
