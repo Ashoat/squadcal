@@ -6,7 +6,6 @@ import { View, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { messageKey } from 'lib/shared/message-utils';
-import { useCanCreateSidebarFromMessage } from 'lib/shared/thread-utils';
 import { type MediaInfo } from 'lib/types/media-types';
 
 import { type PendingMultimediaUpload } from '../input/input-state';
@@ -22,7 +21,6 @@ import {
   type NavigationRoute,
   VideoPlaybackModalRouteName,
   ImageModalRouteName,
-  MultimediaTooltipModalRouteName,
 } from '../navigation/route-names';
 import { type Colors, useColors } from '../themes/colors';
 import { type VerticalBounds } from '../types/layout-types';
@@ -30,7 +28,6 @@ import type { ViewStyle } from '../types/styles';
 import type { ChatNavigationProp } from './chat.react';
 import InlineMultimedia from './inline-multimedia.react';
 import type { ChatMultimediaMessageInfoItem } from './multimedia-message.react';
-import { multimediaTooltipHeight } from './multimedia-tooltip-modal.react';
 
 /* eslint-disable import/no-named-as-default-member */
 const { Value, sub, interpolate, Extrapolate } = Animated;
@@ -42,18 +39,14 @@ type BaseProps = {|
   +navigation: ChatNavigationProp<'MessageList'>,
   +route: NavigationRoute<'MessageList'>,
   +verticalBounds: ?VerticalBounds,
-  +verticalOffset: number,
   +style: ViewStyle,
   +postInProgress: boolean,
   +pendingUpload: ?PendingMultimediaUpload,
-  +messageFocused: boolean,
-  +toggleMessageFocus: (messageKey: string) => void,
 |};
 type Props = {|
   ...BaseProps,
   // Redux state
   +colors: Colors,
-  +canCreateSidebarFromMessage: boolean,
   // withKeyboardState
   +keyboardState: ?KeyboardState,
   // withOverlayContext
@@ -152,7 +145,6 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
           <InlineMultimedia
             mediaInfo={mediaInfo}
             onPress={this.onPress}
-            onLongPress={this.onLongPress}
             postInProgress={postInProgress}
             pendingUpload={pendingUpload}
             spinnerColor={this.props.item.threadInfo.color}
@@ -211,95 +203,6 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
     });
   };
 
-  visibleEntryIDs() {
-    const result = [];
-
-    if (this.props.item.threadCreatedFromMessage) {
-      result.push('open_sidebar');
-    } else if (this.props.canCreateSidebarFromMessage) {
-      result.push('create_sidebar');
-    }
-
-    return result;
-  }
-
-  onLongPress = () => {
-    const visibleEntryIDs = this.visibleEntryIDs();
-    if (visibleEntryIDs.length === 0) {
-      return;
-    }
-
-    const {
-      view,
-      props: { verticalBounds },
-    } = this;
-    if (!view || !verticalBounds) {
-      return;
-    }
-
-    if (!this.clickable) {
-      return;
-    }
-    this.clickable = false;
-
-    const {
-      messageFocused,
-      toggleMessageFocus,
-      item,
-      mediaInfo,
-      verticalOffset,
-    } = this.props;
-    if (!messageFocused) {
-      toggleMessageFocus(messageKey(item.messageInfo));
-    }
-
-    const overlayContext = MultimediaMessageMultimedia.getOverlayContext(
-      this.props,
-    );
-    overlayContext.setScrollBlockingModalStatus('open');
-
-    view.measure((x, y, width, height, pageX, pageY) => {
-      const coordinates = { x: pageX, y: pageY, width, height };
-
-      const multimediaTop = pageY;
-      const multimediaBottom = pageY + height;
-      const boundsTop = verticalBounds.y;
-      const boundsBottom = verticalBounds.y + verticalBounds.height;
-
-      const belowMargin = 20;
-      const belowSpace = multimediaTooltipHeight + belowMargin;
-      const { isViewer } = item.messageInfo.creator;
-      const directlyAboveMargin = isViewer ? 30 : 50;
-      const aboveMargin = verticalOffset === 0 ? directlyAboveMargin : 20;
-      const aboveSpace = multimediaTooltipHeight + aboveMargin;
-
-      let location = 'below',
-        margin = belowMargin;
-      if (
-        multimediaBottom + belowSpace > boundsBottom &&
-        multimediaTop - aboveSpace > boundsTop
-      ) {
-        location = 'above';
-        margin = aboveMargin;
-      }
-
-      this.props.navigation.navigate({
-        name: MultimediaTooltipModalRouteName,
-        params: {
-          presentedFrom: this.props.route.key,
-          mediaInfo,
-          item,
-          initialCoordinates: coordinates,
-          verticalOffset,
-          verticalBounds,
-          location,
-          margin,
-          visibleEntryIDs,
-        },
-      });
-    });
-  };
-
   dismissKeyboardIfShowing = () => {
     const { keyboardState } = this.props;
     return !!(keyboardState && keyboardState.dismissKeyboardIfShowing());
@@ -321,15 +224,10 @@ export default React.memo<BaseProps>(
     const colors = useColors();
     const keyboardState = React.useContext(KeyboardContext);
     const overlayContext = React.useContext(OverlayContext);
-    const canCreateSidebarFromMessage = useCanCreateSidebarFromMessage(
-      props.item.threadInfo,
-      props.item.messageInfo,
-    );
     return (
       <MultimediaMessageMultimedia
         {...props}
         colors={colors}
-        canCreateSidebarFromMessage={canCreateSidebarFromMessage}
         keyboardState={keyboardState}
         overlayContext={overlayContext}
       />

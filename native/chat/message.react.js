@@ -94,7 +94,6 @@ class Message extends React.PureComponent<Props> {
           navigation={this.props.navigation}
           route={this.props.route}
           focused={this.props.focused}
-          toggleFocus={this.props.toggleFocus}
           verticalBounds={this.props.verticalBounds}
         />
       );

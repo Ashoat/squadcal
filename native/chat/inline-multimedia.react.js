@@ -17,7 +17,7 @@ import Multimedia from '../media/multimedia.react';
 type Props = {|
   +mediaInfo: MediaInfo,
   +onPress: () => void,
-  +onLongPress: () => void,
+  +onLongPress?: () => void,
   +postInProgress: boolean,
   +pendingUpload: ?PendingMultimediaUpload,
   +spinnerColor: string,
