@@ -91,8 +91,6 @@ class Message extends React.PureComponent<Props> {
       message = (
         <MultimediaMessage
           item={this.props.item}
-          navigation={this.props.navigation}
-          route={this.props.route}
           focused={this.props.focused}
           verticalBounds={this.props.verticalBounds}
         />

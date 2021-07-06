@@ -1,5 +1,12 @@
 // @flow
 
+import {
+  type LeafRoute,
+  type NavigationProp,
+  type ParamListBase,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import invariant from 'invariant';
 import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
@@ -18,14 +25,12 @@ import {
   type OverlayContextType,
 } from '../navigation/overlay-context';
 import {
-  type NavigationRoute,
   VideoPlaybackModalRouteName,
   ImageModalRouteName,
 } from '../navigation/route-names';
 import { type Colors, useColors } from '../themes/colors';
 import { type VerticalBounds } from '../types/layout-types';
 import type { ViewStyle } from '../types/styles';
-import type { ChatNavigationProp } from './chat.react';
 import InlineMultimedia from './inline-multimedia.react';
 import type { ChatMultimediaMessageInfoItem } from './multimedia-message.react';
 
@@ -36,8 +41,6 @@ const { Value, sub, interpolate, Extrapolate } = Animated;
 type BaseProps = {|
   +mediaInfo: MediaInfo,
   +item: ChatMultimediaMessageInfoItem,
-  +navigation: ChatNavigationProp<'MessageList'>,
-  +route: NavigationRoute<'MessageList'>,
   +verticalBounds: ?VerticalBounds,
   +style: ViewStyle,
   +postInProgress: boolean,
@@ -45,6 +48,8 @@ type BaseProps = {|
 |};
 type Props = {|
   ...BaseProps,
+  +navigation: NavigationProp<ParamListBase>,
+  +route: LeafRoute<>,
   // Redux state
   +colors: Colors,
   // withKeyboardState
@@ -224,10 +229,14 @@ export default React.memo<BaseProps>(
     const colors = useColors();
     const keyboardState = React.useContext(KeyboardContext);
     const overlayContext = React.useContext(OverlayContext);
+    const navigation = useNavigation();
+    const route = useRoute();
     return (
       <MultimediaMessageMultimedia
         {...props}
         colors={colors}
+        navigation={navigation}
+        route={route}
         keyboardState={keyboardState}
         overlayContext={overlayContext}
       />

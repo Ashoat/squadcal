@@ -12,10 +12,8 @@ import type {
 import type { ThreadInfo } from 'lib/types/thread-types';
 
 import type { MessagePendingUploads } from '../input/input-state';
-import type { NavigationRoute } from '../navigation/route-names';
 import { type VerticalBounds } from '../types/layout-types';
 import type { ViewStyle } from '../types/styles';
-import type { ChatNavigationProp } from './chat.react';
 import { ComposedMessage, clusterEndHeight } from './composed-message.react';
 import { failedSendHeight } from './failed-send.react';
 import {
@@ -136,21 +134,12 @@ const borderRadius = 16;
 type Props = {|
   ...React.ElementConfig<typeof View>,
   +item: ChatMultimediaMessageInfoItem,
-  +navigation: ChatNavigationProp<'MessageList'>,
-  +route: NavigationRoute<'MessageList'>,
   +focused: boolean,
   +verticalBounds: ?VerticalBounds,
 |};
 class MultimediaMessage extends React.PureComponent<Props> {
   render() {
-    const {
-      item,
-      navigation,
-      route,
-      focused,
-      verticalBounds,
-      ...viewProps
-    } = this.props;
+    const { item, focused, verticalBounds, ...viewProps } = this.props;
     const containerStyle = {
       height: item.contentHeight,
       width: item.contentWidth,
@@ -239,8 +228,6 @@ class MultimediaMessage extends React.PureComponent<Props> {
     return (
       <MultimediaMessageMultimedia
         mediaInfo={mediaInfo}
-        navigation={this.props.navigation}
-        route={this.props.route}
         verticalBounds={this.props.verticalBounds}
         style={[style, roundedStyle]}
         postInProgress={!!pendingUploads}
