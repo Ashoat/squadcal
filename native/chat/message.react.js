@@ -92,6 +92,7 @@ class Message extends React.PureComponent<Props> {
         <MultimediaMessage
           item={this.props.item}
           focused={this.props.focused}
+          toggleFocus={this.props.toggleFocus}
           verticalBounds={this.props.verticalBounds}
         />
       );
