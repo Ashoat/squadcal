@@ -28,6 +28,8 @@ type Props = {|
     mediaInfo: MediaInfo,
     initialCoordinates: LayoutCoordinates,
   ) => void,
+  +clickable: boolean,
+  +setClickable: (boolean) => void,
 |};
 class InnerMultimediaMessage extends React.PureComponent<Props> {
   render() {
@@ -119,6 +121,8 @@ class InnerMultimediaMessage extends React.PureComponent<Props> {
         item={this.props.item}
         key={index}
         onPressMultimedia={this.props.onPressMultimedia}
+        clickable={this.props.clickable}
+        setClickable={this.props.setClickable}
       />
     );
   }

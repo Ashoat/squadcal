@@ -36,7 +36,18 @@ type Props = {|
   +navigation: NavigationProp<ParamListBase>,
   +route: LeafRoute<>,
 |};
-class MultimediaMessage extends React.PureComponent<Props> {
+type State = {|
+  +clickable: boolean,
+|};
+class MultimediaMessage extends React.PureComponent<Props, State> {
+  state: State = {
+    clickable: true,
+  };
+
+  setClickable = (clickable: boolean) => {
+    this.setState({ clickable });
+  };
+
   onPressMultimedia = (
     mediaInfo: MediaInfo,
     initialCoordinates: LayoutCoordinates,
@@ -78,6 +89,8 @@ class MultimediaMessage extends React.PureComponent<Props> {
           item={item}
           verticalBounds={verticalBounds}
           onPressMultimedia={this.onPressMultimedia}
+          clickable={this.state.clickable}
+          setClickable={this.setClickable}
         />
       </ComposedMessage>
     );

@@ -43,6 +43,8 @@ type BaseProps = {|
     mediaInfo: MediaInfo,
     initialCoordinates: LayoutCoordinates,
   ) => void,
+  +clickable: boolean,
+  +setClickable: (boolean) => void,
 |};
 type Props = {|
   ...BaseProps,
@@ -59,7 +61,6 @@ type State = {|
 |};
 class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
   view: ?React.ElementRef<typeof View>;
-  clickable = true;
 
   constructor(props: Props) {
     super(props);
@@ -127,7 +128,7 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
       MultimediaMessageMultimedia.getOverlayContext(prevProps)
         .scrollBlockingModalStatus !== 'closed';
     if (!scrollIsDisabled && scrollWasDisabled) {
-      this.clickable = true;
+      this.props.setClickable(true);
     }
   }
 
@@ -175,10 +176,10 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
       return;
     }
 
-    if (!this.clickable) {
+    if (!this.props.clickable) {
       return;
     }
-    this.clickable = false;
+    this.props.setClickable(false);
 
     const overlayContext = MultimediaMessageMultimedia.getOverlayContext(
       this.props,
