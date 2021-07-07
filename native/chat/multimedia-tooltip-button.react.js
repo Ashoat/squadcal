@@ -11,8 +11,8 @@ import type { AppNavigationProp } from '../navigation/app-navigator.react';
 import type { TooltipRoute } from '../navigation/tooltip.react';
 import { useSelector } from '../redux/redux-utils';
 import InlineMultimedia from './inline-multimedia.react';
+import { multimediaMessageBorderRadius } from './inner-multimedia-message.react';
 import { MessageHeader } from './message-header.react';
-import { multimediaMessageBorderRadius } from './multimedia-message.react';
 import { getRoundedContainerStyle } from './rounded-corners';
 
 /* eslint-disable import/no-named-as-default-member */
