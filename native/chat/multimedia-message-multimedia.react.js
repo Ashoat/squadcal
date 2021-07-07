@@ -12,7 +12,6 @@ import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { messageKey } from 'lib/shared/message-utils';
 import { type MediaInfo } from 'lib/types/media-types';
 
 import { type PendingMultimediaUpload } from '../input/input-state';
@@ -32,7 +31,10 @@ import { type Colors, useColors } from '../themes/colors';
 import { type VerticalBounds } from '../types/layout-types';
 import type { ViewStyle } from '../types/styles';
 import InlineMultimedia from './inline-multimedia.react';
-import type { ChatMultimediaMessageInfoItem } from './multimedia-message-utils';
+import {
+  type ChatMultimediaMessageInfoItem,
+  getMediaKey,
+} from './multimedia-message-utils';
 
 /* eslint-disable import/no-named-as-default-member */
 const { Value, sub, interpolate, Extrapolate } = Animated;
@@ -71,11 +73,6 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
     };
   }
 
-  static getStableKey(props: Props) {
-    const { item, mediaInfo } = props;
-    return `multimedia|${messageKey(item.messageInfo)}|${mediaInfo.index}`;
-  }
-
   static getOverlayContext(props: Props) {
     const { overlayContext } = props;
     invariant(
@@ -92,7 +89,7 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
       if (
         overlay.routeName === ImageModalRouteName &&
         overlay.presentedFrom === props.route.key &&
-        overlay.routeKey === MultimediaMessageMultimedia.getStableKey(props)
+        overlay.routeKey === getMediaKey(props.item, props.mediaInfo)
       ) {
         return overlay.position;
       }
@@ -196,7 +193,7 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
           mediaInfo.type === 'video'
             ? VideoPlaybackModalRouteName
             : ImageModalRouteName,
-        key: MultimediaMessageMultimedia.getStableKey(this.props),
+        key: getMediaKey(item, mediaInfo),
         params: {
           presentedFrom: this.props.route.key,
           mediaInfo,

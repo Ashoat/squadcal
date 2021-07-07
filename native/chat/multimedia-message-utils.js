@@ -2,6 +2,8 @@
 
 import invariant from 'invariant';
 
+import { messageKey } from 'lib/shared/message-utils';
+import type { MediaInfo } from 'lib/types/media-types';
 import type {
   LocalMessageInfo,
   MultimediaMessageInfo,
@@ -147,10 +149,18 @@ function multimediaMessageItemHeight(
   return height;
 }
 
+function getMediaKey(
+  item: ChatMultimediaMessageInfoItem,
+  mediaInfo: MediaInfo,
+): string {
+  return `multimedia|${messageKey(item.messageInfo)}|${mediaInfo.index}`;
+}
+
 export {
   multimediaMessageContentSizes,
   multimediaMessageItemHeight,
   multimediaMessageSendFailed,
   getMediaPerRow,
   spaceBetweenImages,
+  getMediaKey,
 };
