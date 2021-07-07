@@ -7,7 +7,7 @@ import {
   tooltipHeight,
   type TooltipParams,
 } from '../navigation/tooltip.react';
-import type { ChatMultimediaMessageInfoItem } from './multimedia-message.react';
+import type { ChatMultimediaMessageInfoItem } from './multimedia-message-utils';
 import MultimediaTooltipButton from './multimedia-tooltip-button.react';
 import { navigateToSidebar } from './sidebar-navigation';
 

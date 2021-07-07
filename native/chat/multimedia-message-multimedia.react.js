@@ -32,7 +32,7 @@ import { type Colors, useColors } from '../themes/colors';
 import { type VerticalBounds } from '../types/layout-types';
 import type { ViewStyle } from '../types/styles';
 import InlineMultimedia from './inline-multimedia.react';
-import type { ChatMultimediaMessageInfoItem } from './multimedia-message.react';
+import type { ChatMultimediaMessageInfoItem } from './multimedia-message-utils';
 
 /* eslint-disable import/no-named-as-default-member */
 const { Value, sub, interpolate, Extrapolate } = Animated;

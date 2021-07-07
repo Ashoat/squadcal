@@ -22,7 +22,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { type MediaInfo, type Dimensions } from 'lib/types/media-types';
 import { useIsReportEnabled } from 'lib/utils/report-utils';
 
-import type { ChatMultimediaMessageInfoItem } from '../chat/multimedia-message.react';
+import type { ChatMultimediaMessageInfoItem } from '../chat/multimedia-message-utils';
 import ConnectedStatusBar from '../connected-status-bar.react';
 import type { AppNavigationProp } from '../navigation/app-navigator.react';
 import {

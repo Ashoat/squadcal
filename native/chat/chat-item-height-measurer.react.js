@@ -16,7 +16,7 @@ import { composedMessageMaxWidthSelector } from './composed-message-width';
 import { dummyNodeForRobotextMessageHeightMeasurement } from './inner-robotext-message.react';
 import { dummyNodeForTextMessageHeightMeasurement } from './inner-text-message.react';
 import { MessageListContextProvider } from './message-list-types';
-import { multimediaMessageContentSizes } from './multimedia-message.react';
+import { multimediaMessageContentSizes } from './multimedia-message-utils';
 
 type Props = {|
   +measurement: MeasurementTask,

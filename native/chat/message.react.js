@@ -17,11 +17,11 @@ import type { NavigationRoute } from '../navigation/route-names';
 import { type VerticalBounds } from '../types/layout-types';
 import type { LayoutEvent } from '../types/react-native';
 import type { ChatNavigationProp } from './chat.react';
-import type { ChatMultimediaMessageInfoItem } from './multimedia-message.react';
 import {
-  MultimediaMessage,
   multimediaMessageItemHeight,
-} from './multimedia-message.react';
+  type ChatMultimediaMessageInfoItem,
+} from './multimedia-message-utils';
+import MultimediaMessage from './multimedia-message.react';
 import type { ChatRobotextMessageInfoItemWithHeight } from './robotext-message.react';
 import {
   RobotextMessage,

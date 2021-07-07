@@ -8,28 +8,16 @@ import type { Corners, Media } from 'lib/types/media-types';
 import type { VerticalBounds } from '../types/layout-types';
 import type { ViewStyle } from '../types/styles';
 import MultimediaMessageMultimedia from './multimedia-message-multimedia.react';
-import type { ChatMultimediaMessageInfoItem } from './multimedia-message.react';
+import {
+  getMediaPerRow,
+  spaceBetweenImages,
+  type ChatMultimediaMessageInfoItem,
+} from './multimedia-message-utils';
 import {
   allCorners,
   filterCorners,
   getRoundedContainerStyle,
 } from './rounded-corners';
-
-function getMediaPerRow(mediaCount: number) {
-  if (mediaCount === 0) {
-    return 0; // ???
-  } else if (mediaCount === 1) {
-    return 1;
-  } else if (mediaCount === 2) {
-    return 2;
-  } else if (mediaCount === 3) {
-    return 3;
-  } else if (mediaCount === 4) {
-    return 2;
-  } else {
-    return 3;
-  }
-}
 
 const borderRadius = 16;
 
@@ -131,7 +119,6 @@ class InnerMultimediaMessage extends React.PureComponent<Props> {
   }
 }
 
-const spaceBetweenImages = 4;
 const styles = StyleSheet.create({
   filler: {
     flex: 1,
@@ -155,7 +142,5 @@ const styles = StyleSheet.create({
 
 export {
   InnerMultimediaMessage,
-  getMediaPerRow,
-  spaceBetweenImages,
   borderRadius as multimediaMessageBorderRadius,
 };
