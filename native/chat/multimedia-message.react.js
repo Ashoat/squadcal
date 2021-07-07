@@ -1,5 +1,11 @@
 // @flow
 
+import type {
+  LeafRoute,
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import invariant from 'invariant';
 import * as React from 'react';
 import { View } from 'react-native';
@@ -110,15 +116,27 @@ function multimediaMessageItemHeight(item: ChatMultimediaMessageInfoItem) {
   return height;
 }
 
-type Props = {|
+type BaseProps = {|
   ...React.ElementConfig<typeof View>,
   +item: ChatMultimediaMessageInfoItem,
   +focused: boolean,
   +verticalBounds: ?VerticalBounds,
 |};
+type Props = {|
+  ...BaseProps,
+  +navigation: NavigationProp<ParamListBase>,
+  +route: LeafRoute<>,
+|};
 class MultimediaMessage extends React.PureComponent<Props> {
   render() {
-    const { item, focused, verticalBounds, ...viewProps } = this.props;
+    const {
+      item,
+      focused,
+      verticalBounds,
+      navigation,
+      route,
+      ...viewProps
+    } = this.props;
     return (
       <ComposedMessage
         item={item}
@@ -132,8 +150,18 @@ class MultimediaMessage extends React.PureComponent<Props> {
   }
 }
 
+const MultimediaMessageComponent: React.ComponentType<BaseProps> = React.memo<BaseProps>(
+  function ConnectedMultimediaMessage(props: BaseProps) {
+    const navigation = useNavigation();
+    const route = useRoute();
+    return (
+      <MultimediaMessage {...props} navigation={navigation} route={route} />
+    );
+  },
+);
+
 export {
-  MultimediaMessage,
+  MultimediaMessageComponent as MultimediaMessage,
   multimediaMessageContentSizes,
   multimediaMessageItemHeight,
   sendFailed as multimediaMessageSendFailed,
