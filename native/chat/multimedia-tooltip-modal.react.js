@@ -1,20 +1,18 @@
 // @flow
 
-import type { MediaInfo } from 'lib/types/media-types';
-
 import {
   createTooltip,
   tooltipHeight,
   type TooltipParams,
 } from '../navigation/tooltip.react';
+import type { VerticalBounds } from '../types/layout-types';
 import type { ChatMultimediaMessageInfoItem } from './multimedia-message-utils';
 import MultimediaTooltipButton from './multimedia-tooltip-button.react';
 import { navigateToSidebar } from './sidebar-navigation';
 
 export type MultimediaTooltipModalParams = TooltipParams<{|
   +item: ChatMultimediaMessageInfoItem,
-  +mediaInfo: MediaInfo,
-  +verticalOffset: number,
+  +verticalBounds: VerticalBounds,
 |}>;
 
 const spec = {
