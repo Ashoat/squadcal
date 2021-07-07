@@ -1,7 +1,7 @@
 // @flow
 import invariant from 'invariant';
 import * as React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 
 import type { Corners, Media, MediaInfo } from 'lib/types/media-types';
 
@@ -30,6 +30,8 @@ type Props = {|
   ) => void,
   +clickable: boolean,
   +setClickable: (boolean) => void,
+  +onPress?: () => void,
+  +onLongPress?: () => void,
 |};
 class InnerMultimediaMessage extends React.PureComponent<Props> {
   render() {
@@ -38,7 +40,14 @@ class InnerMultimediaMessage extends React.PureComponent<Props> {
       height: item.contentHeight,
       width: item.contentWidth,
     };
-    return <View style={containerStyle}>{this.renderContent()}</View>;
+    return (
+      <TouchableWithoutFeedback
+        onPress={this.props.onPress}
+        onLongPress={this.props.onLongPress}
+      >
+        <View style={containerStyle}>{this.renderContent()}</View>
+      </TouchableWithoutFeedback>
+    );
   }
 
   renderContent(): React.Node {
