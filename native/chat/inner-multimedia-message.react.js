@@ -3,9 +3,9 @@ import invariant from 'invariant';
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { Corners, Media } from 'lib/types/media-types';
+import type { Corners, Media, MediaInfo } from 'lib/types/media-types';
 
-import type { VerticalBounds } from '../types/layout-types';
+import type { LayoutCoordinates, VerticalBounds } from '../types/layout-types';
 import type { ViewStyle } from '../types/styles';
 import MultimediaMessageMultimedia from './multimedia-message-multimedia.react';
 import {
@@ -24,6 +24,10 @@ const borderRadius = 16;
 type Props = {|
   +item: ChatMultimediaMessageInfoItem,
   +verticalBounds: ?VerticalBounds,
+  +onPressMultimedia?: (
+    mediaInfo: MediaInfo,
+    initialCoordinates: LayoutCoordinates,
+  ) => void,
 |};
 class InnerMultimediaMessage extends React.PureComponent<Props> {
   render() {
@@ -114,6 +118,7 @@ class InnerMultimediaMessage extends React.PureComponent<Props> {
         pendingUpload={pendingUpload}
         item={this.props.item}
         key={index}
+        onPressMultimedia={this.props.onPressMultimedia}
       />
     );
   }

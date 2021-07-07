@@ -1,12 +1,6 @@
 // @flow
 
-import {
-  type LeafRoute,
-  type NavigationProp,
-  type ParamListBase,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { type LeafRoute, useRoute } from '@react-navigation/native';
 import invariant from 'invariant';
 import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
@@ -23,12 +17,10 @@ import {
   OverlayContext,
   type OverlayContextType,
 } from '../navigation/overlay-context';
-import {
-  VideoPlaybackModalRouteName,
-  ImageModalRouteName,
-} from '../navigation/route-names';
+import { ImageModalRouteName } from '../navigation/route-names';
 import { type Colors, useColors } from '../themes/colors';
 import { type VerticalBounds } from '../types/layout-types';
+import type { LayoutCoordinates } from '../types/layout-types';
 import type { ViewStyle } from '../types/styles';
 import InlineMultimedia from './inline-multimedia.react';
 import {
@@ -47,10 +39,13 @@ type BaseProps = {|
   +style: ViewStyle,
   +postInProgress: boolean,
   +pendingUpload: ?PendingMultimediaUpload,
+  +onPressMultimedia?: (
+    mediaInfo: MediaInfo,
+    initialCoordinates: LayoutCoordinates,
+  ) => void,
 |};
 type Props = {|
   ...BaseProps,
-  +navigation: NavigationProp<ParamListBase>,
   +route: LeafRoute<>,
   // Redux state
   +colors: Colors,
@@ -175,6 +170,11 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
       return;
     }
 
+    const measureCallback = this.props.onPressMultimedia;
+    if (!measureCallback) {
+      return;
+    }
+
     if (!this.clickable) {
       return;
     }
@@ -185,23 +185,9 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
     );
     overlayContext.setScrollBlockingModalStatus('open');
 
-    const { mediaInfo, item } = this.props;
     view.measure((x, y, width, height, pageX, pageY) => {
       const coordinates = { x: pageX, y: pageY, width, height };
-      this.props.navigation.navigate({
-        name:
-          mediaInfo.type === 'video'
-            ? VideoPlaybackModalRouteName
-            : ImageModalRouteName,
-        key: getMediaKey(item, mediaInfo),
-        params: {
-          presentedFrom: this.props.route.key,
-          mediaInfo,
-          item,
-          initialCoordinates: coordinates,
-          verticalBounds,
-        },
-      });
+      measureCallback(this.props.mediaInfo, coordinates);
     });
   };
 
@@ -226,13 +212,11 @@ export default React.memo<BaseProps>(
     const colors = useColors();
     const keyboardState = React.useContext(KeyboardContext);
     const overlayContext = React.useContext(OverlayContext);
-    const navigation = useNavigation();
     const route = useRoute();
     return (
       <MultimediaMessageMultimedia
         {...props}
         colors={colors}
-        navigation={navigation}
         route={route}
         keyboardState={keyboardState}
         overlayContext={overlayContext}

@@ -9,11 +9,19 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import * as React from 'react';
 import { View } from 'react-native';
 
+import type { MediaInfo } from 'lib/types/media-types';
+
+import {
+  ImageModalRouteName,
+  VideoPlaybackModalRouteName,
+} from '../navigation/route-names';
 import { type VerticalBounds } from '../types/layout-types';
+import type { LayoutCoordinates } from '../types/layout-types';
 import { ComposedMessage } from './composed-message.react';
 import { InnerMultimediaMessage } from './inner-multimedia-message.react';
 import {
   type ChatMultimediaMessageInfoItem,
+  getMediaKey,
   multimediaMessageSendFailed,
 } from './multimedia-message-utils';
 
@@ -29,6 +37,27 @@ type Props = {|
   +route: LeafRoute<>,
 |};
 class MultimediaMessage extends React.PureComponent<Props> {
+  onPressMultimedia = (
+    mediaInfo: MediaInfo,
+    initialCoordinates: LayoutCoordinates,
+  ) => {
+    const { navigation, item, route, verticalBounds } = this.props;
+    navigation.navigate({
+      name:
+        mediaInfo.type === 'video'
+          ? VideoPlaybackModalRouteName
+          : ImageModalRouteName,
+      key: getMediaKey(item, mediaInfo),
+      params: {
+        presentedFrom: route.key,
+        mediaInfo,
+        item,
+        initialCoordinates,
+        verticalBounds,
+      },
+    });
+  };
+
   render() {
     const {
       item,
@@ -45,7 +74,11 @@ class MultimediaMessage extends React.PureComponent<Props> {
         focused={focused}
         {...viewProps}
       >
-        <InnerMultimediaMessage item={item} verticalBounds={verticalBounds} />
+        <InnerMultimediaMessage
+          item={item}
+          verticalBounds={verticalBounds}
+          onPressMultimedia={this.onPressMultimedia}
+        />
       </ComposedMessage>
     );
   }
