@@ -17,7 +17,6 @@ import Multimedia from '../media/multimedia.react';
 type Props = {|
   +mediaInfo: MediaInfo,
   +onPress: () => void,
-  +onLongPress?: () => void,
   +postInProgress: boolean,
   +pendingUpload: ?PendingMultimediaUpload,
   +spinnerColor: string,
@@ -93,11 +92,7 @@ function InlineMultimedia(props: Props) {
 
   return (
     <View style={styles.expand}>
-      <GestureTouchableOpacity
-        onPress={props.onPress}
-        onLongPress={props.onLongPress}
-        style={styles.expand}
-      >
+      <GestureTouchableOpacity onPress={props.onPress} style={styles.expand}>
         <Multimedia mediaInfo={mediaInfo} spinnerColor={props.spinnerColor} />
         {progressIndicator ? progressIndicator : playButton}
       </GestureTouchableOpacity>
