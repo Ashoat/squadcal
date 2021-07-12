@@ -159,6 +159,10 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
   };
 
   onPress = () => {
+    if (!this.props.clickable) {
+      return;
+    }
+
     if (this.dismissKeyboardIfShowing()) {
       return;
     }
@@ -176,9 +180,6 @@ class MultimediaMessageMultimedia extends React.PureComponent<Props, State> {
       return;
     }
 
-    if (!this.props.clickable) {
-      return;
-    }
     this.props.setClickable(false);
 
     const overlayContext = MultimediaMessageMultimedia.getOverlayContext(
