@@ -60,6 +60,7 @@ type Props = {|
   +startReached: boolean,
   +styles: typeof unboundStyles,
   +indicatorStyle: IndicatorStyle,
+  +currentTransitionSidebarSourceID: ?string,
   // Redux dispatch functions
   +dispatchActionPromise: DispatchActionPromise,
   // async functions that hit server APIs
@@ -89,6 +90,7 @@ type FlatListExtraData = {|
   focusedMessageKey: ?string,
   navigation: ChatNavigationProp<'MessageList'>,
   route: NavigationRoute<'MessageList'>,
+  currentTransitionSidebarSourceID: ?string,
 |};
 class MessageList extends React.PureComponent<Props, State> {
   state: State = {
@@ -103,16 +105,20 @@ class MessageList extends React.PureComponent<Props, State> {
     (propsAndState: PropsAndState) => propsAndState.focusedMessageKey,
     (propsAndState: PropsAndState) => propsAndState.navigation,
     (propsAndState: PropsAndState) => propsAndState.route,
+    (propsAndState: PropsAndState) =>
+      propsAndState.currentTransitionSidebarSourceID,
     (
       messageListVerticalBounds: ?VerticalBounds,
       focusedMessageKey: ?string,
       navigation: ChatNavigationProp<'MessageList'>,
       route: NavigationRoute<'MessageList'>,
+      currentTransitionSidebarSourceID: ?string,
     ) => ({
       messageListVerticalBounds,
       focusedMessageKey,
       navigation,
       route,
+      currentTransitionSidebarSourceID,
     }),
   );
 
@@ -184,9 +190,12 @@ class MessageList extends React.PureComponent<Props, State> {
       focusedMessageKey,
       navigation,
       route,
+      currentTransitionSidebarSourceID,
     } = this.flatListExtraData;
     const focused =
       messageKey(messageInfoItem.messageInfo) === focusedMessageKey;
+    const isVisible =
+      messageInfoItem.messageInfo.id !== currentTransitionSidebarSourceID;
     return (
       <Message
         item={messageInfoItem}
@@ -195,6 +204,7 @@ class MessageList extends React.PureComponent<Props, State> {
         route={route}
         toggleFocus={this.toggleMessageFocus}
         verticalBounds={messageListVerticalBounds}
+        visible={isVisible}
       />
     );
   };
@@ -361,12 +371,17 @@ export default React.memo<BaseProps>(function ConnectedMessageList(
 
   useWatchThread(props.threadInfo);
 
+  const currentTransitionSidebarSourceID = useSelector(
+    (state) => state.navInfo.currentTransitionSidebarSourceID,
+  );
+
   return (
     <MessageList
       {...props}
       startReached={startReached}
       styles={styles}
       indicatorStyle={indicatorStyle}
+      currentTransitionSidebarSourceID={currentTransitionSidebarSourceID}
       dispatchActionPromise={dispatchActionPromise}
       fetchMessagesBeforeCursor={callFetchMessagesBeforeCursor}
       fetchMostRecentMessages={callFetchMostRecentMessages}
