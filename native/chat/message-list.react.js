@@ -1,9 +1,11 @@
 // @flow
 
+import { useFocusEffect } from '@react-navigation/native';
 import invariant from 'invariant';
 import _find from 'lodash/fp/find';
 import * as React from 'react';
 import { View, TouchableWithoutFeedback } from 'react-native';
+import { useDispatch } from 'react-redux';
 import { createSelector } from 'reselect';
 
 import {
@@ -41,6 +43,7 @@ import {
   useIndicatorStyle,
 } from '../themes/colors';
 import type { VerticalBounds } from '../types/layout-types';
+import { setCurrentTransitionSidebarSourceIDType } from '../types/nav-types';
 import type { ViewToken } from '../types/react-native';
 import { ChatList } from './chat-list.react';
 import type { ChatNavigationProp } from './chat.react';
@@ -373,6 +376,18 @@ export default React.memo<BaseProps>(function ConnectedMessageList(
 
   const currentTransitionSidebarSourceID = useSelector(
     (state) => state.navInfo.currentTransitionSidebarSourceID,
+  );
+
+  const dispatch = useDispatch();
+  useFocusEffect(
+    React.useCallback(() => {
+      if (currentTransitionSidebarSourceID) {
+        dispatch({
+          type: setCurrentTransitionSidebarSourceIDType,
+          payload: null,
+        });
+      }
+    }, [currentTransitionSidebarSourceID, dispatch]),
   );
 
   return (
