@@ -2,9 +2,9 @@
 
 import type { StaleNavigationState } from '@react-navigation/native';
 
-import type { BaseNavInfo } from 'lib/types/nav-types';
 import { fifteenDaysEarlier, fifteenDaysLater } from 'lib/utils/date-utils';
 
+import type { NavInfo } from '../types/nav-types';
 import {
   AppRouteName,
   TabNavigatorRouteName,
@@ -17,8 +17,6 @@ import {
   BackgroundChatThreadListRouteName,
   AppsRouteName,
 } from './route-names';
-
-export type NavInfo = $Exact<BaseNavInfo>;
 
 const defaultNavigationState: StaleNavigationState = {
   type: 'stack',

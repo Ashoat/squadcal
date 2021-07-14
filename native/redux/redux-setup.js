@@ -42,7 +42,7 @@ import type { CurrentUserInfo, UserStore } from 'lib/types/user-types';
 import { reduxLoggerMiddleware } from 'lib/utils/action-logger';
 import { setNewSessionActionType } from 'lib/utils/action-utils';
 
-import { type NavInfo, defaultNavInfo } from '../navigation/default-state';
+import { defaultNavInfo } from '../navigation/default-state';
 import { getGlobalNavContext } from '../navigation/icky-global';
 import { activeMessageListSelector } from '../navigation/nav-selectors';
 import {
@@ -59,6 +59,8 @@ import {
   type ConnectivityInfo,
   defaultConnectivityInfo,
 } from '../types/connectivity';
+import type { NavInfo } from '../types/nav-types';
+import { setCurrentTransitionSidebarSourceIDType } from '../types/nav-types';
 import { type GlobalThemeInfo, defaultGlobalThemeInfo } from '../types/themes';
 import {
   defaultURLPrefix,
@@ -294,6 +296,14 @@ function reducer(state: AppState = defaultState, action: *) {
     return {
       ...state,
       deviceToken: action.payload,
+    };
+  } else if (action.type === setCurrentTransitionSidebarSourceIDType) {
+    return {
+      ...state,
+      navInfo: {
+        ...state.navInfo,
+        currentTransitionSidebarSourceID: action.payload,
+      },
     };
   } else if (action.type === updateThreadLastNavigatedActionType) {
     const { threadID, time } = action.payload;
