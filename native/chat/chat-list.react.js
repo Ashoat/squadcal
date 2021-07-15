@@ -321,4 +321,8 @@ const ConnectedChatList = React.memo<BaseProps>(function ConnectedChatList(
   );
 });
 
-export { ConnectedChatList as ChatList, chatMessageItemKey };
+export {
+  ConnectedChatList as ChatList,
+  chatMessageItemKey,
+  chatMessageItemHeight,
+};
