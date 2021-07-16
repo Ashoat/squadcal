@@ -1,5 +1,6 @@
 // @flow
 
+import { useFocusEffect } from '@react-navigation/native';
 import * as React from 'react';
 import {
   LayoutAnimation,
@@ -10,12 +11,17 @@ import {
 } from 'react-native';
 
 import { messageKey } from 'lib/shared/message-utils';
+import { getPendingThreadID } from 'lib/shared/thread-utils';
+import { threadTypes } from 'lib/types/thread-types';
 
 import {
   type KeyboardState,
   KeyboardContext,
 } from '../keyboard/keyboard-state';
+import { activeThreadSelector } from '../navigation/nav-selectors';
+import { NavContext } from '../navigation/navigation-context';
 import type { NavigationRoute } from '../navigation/route-names';
+import { useSelector } from '../redux/redux-utils';
 import { type VerticalBounds } from '../types/layout-types';
 import type { LayoutEvent } from '../types/react-native';
 import type { ChatNavigationProp } from './chat.react';
@@ -166,7 +172,35 @@ const ConnectedMessage = React.memo<BaseProps>(function ConnectedMessage(
   props: BaseProps,
 ) {
   const keyboardState = React.useContext(KeyboardContext);
-  return <Message {...props} keyboardState={keyboardState} />;
+  const [isVisible, setVisible] = React.useState(true);
+  const navContext = React.useContext(NavContext);
+  const activeThreadID = activeThreadSelector(navContext);
+  const activeThread = useSelector((state) =>
+    activeThreadID ? state.threadStore.threadInfos[activeThreadID] : null,
+  );
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isVisible) {
+        setVisible(true);
+      }
+    }, [isVisible]),
+  );
+  React.useEffect(() => {
+    setVisible(true);
+    if (
+      activeThread?.sourceMessageID === props.item.messageInfo.id ||
+      activeThreadID ===
+        getPendingThreadID(threadTypes.SIDEBAR, [], props.item.messageInfo.id)
+    ) {
+      setVisible(false);
+    }
+  }, [activeThread, activeThreadID, props.item.messageInfo.id]);
+  React.useEffect(() => {
+    console.log(activeThreadID);
+  }, [activeThreadID]);
+  return (
+    <Message {...props} keyboardState={keyboardState} visible={isVisible} />
+  );
 });
 
 export { ConnectedMessage as Message, messageItemHeight };
